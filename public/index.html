@@ -2,11 +2,123 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Nitesha Beauty Parlor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nitesha Parlor</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>Welcome to Nitesha's Beauty Parlor</h1>
-  <!-- More static content here -->
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <div class="logo">Nitesha Parlor</div>
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#book" class="book-btn">Book Online</a></li>
+      </ul>
+      <div class="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-bg-collage" id="collage"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="bella-script">Nitesha Parlor</h1>
+      <p class="hero-tagline">Lake Norman's Premier Salon + Medspa</p>
+      <a href="#book" class="cta-btn">Book Now</a>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="container">
+      <h2>Our Services</h2>
+      <div class="service-cards">
+        <div class="service-card">
+          <h3>Salon</h3>
+          <p>Haircuts, styling, color, and more.</p>
+        </div>
+        <div class="service-card">
+          <h3>Spa</h3>
+          <p>Facials, peels, and relaxing treatments.</p>
+        </div>
+        <div class="service-card">
+          <h3>Specials</h3>
+          <p>Festival promos and exclusive deals.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="about">
+    <div class="container">
+      <h2>About Nitesha Parlor</h2>
+      <p>We are dedicated to delivering the highest quality salon and spa services. Our skilled team provides outstanding care and personalized attention to every client, ensuring a luxurious experience every time.</p>
+    </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section class="gallery" id="gallery">
+    <div class="container">
+      <h2>Gallery</h2>
+      <div class="gallery-images">
+        <img src="https://via.placeholder.com/200x150" alt="Gallery 1">
+        <img src="https://via.placeholder.com/200x150" alt="Gallery 2">
+        <img src="https://via.placeholder.com/200x150" alt="Gallery 3">
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section class="reviews" id="reviews">
+    <div class="container">
+      <h2>What Our Clients Say</h2>
+      <div class="review-cards">
+        <div class="review-card">
+          <p>"Amazing service and friendly staff!"</p>
+          <span>- Client Name</span>
+        </div>
+        <div class="review-card">
+          <p>"Best salon experience ever!"</p>
+          <span>- Client Name</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <h2>Contact Us</h2>
+      <p>550 Beauty Lane, Your City, Country</p>
+      <p>Phone: 123-456-7890</p>
+      <p>Email: info@niteshaparlor.com</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Nitesha Parlor. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Policies</a> |
+        <a href="#">About</a> |
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+  <script src="collage.js"></script>
 </body>
-</html>
+</html> 
