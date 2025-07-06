@@ -147,7 +147,6 @@ button {
   font-size: var(--normal-font-size);
   font-weight: var(--font-medium);
   padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--border-radius-xl);
   transition: all var(--transition-fast);
   text-decoration: none;
   display: inline-block;

@@ -6,12 +6,13 @@
   <title>Nitesha Parlor</title>
   <link rel="stylesheet" href="styles/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body>
   <!-- Navigation Bar -->
   <nav class="navbar">
     <div class="container nav-container">
-      <div class="logo">Nitesha Parlor</div>
+      <div class="logo">GB</div>
       <ul class="nav-links">
         <li><a href="#home">Home</a></li>
         <li><a href="#services">Services</a></li>
@@ -108,18 +109,19 @@
   <!-- Testimonial Section -->
   <section class="testimonial-section">
     <h2 class="section-title">TESTIMONIALS</h2>
-    <div class="testimonial-collage">
-      <div class="testimonial-card card1"><img src="assets/bg-1.jpg" alt="Client 1" /></div>
-      <div class="testimonial-card card2"><img src="assets/bg-2.jpg" alt="Client 2" /></div>
-      <div class="testimonial-card card3"><img src="assets/bg-3.jpg" alt="Client 3" /></div>
-      <div class="testimonial-card card4"><img src="assets/bg-4.jpg" alt="Client 4" /></div>
-      <div class="testimonial-card card5"><img src="assets/bg-5.jpg" alt="Client 5" /></div>
-      <div class="testimonial-card card6"><img src="assets/bg-6.jpg" alt="Client 6" /></div>
-      <div class="testimonial-card card7"><img src="assets/bg-7.jpg" alt="Client 7" /></div>
-      <div class="testimonial-card card8"><img src="assets/bg-8.jpg" alt="Client 8" /></div>
-      <div class="testimonial-card card9"><img src="assets/bg-9.jpg" alt="Client 9" /></div>
-      <div class="testimonial-card card10"><img src="assets/service-beauty.jpg" alt="Client 10" /></div>
-      <div class="testimonial-card card11"><img src="assets/service-bridal.jpg" alt="Client 11" /></div>
+    <div class="testimonial-collage" id="testimonialCollage">
+      <!-- Testimonial cards will be injected by JS -->
+    </div>
+    <!-- Testimonial Popup Modal -->
+    <div class="testimonial-modal" id="testimonialModal" style="display:none;">
+      <div class="testimonial-modal-content">
+        <button class="testimonial-modal-close" id="testimonialModalClose">&times;</button>
+        <div class="testimonial-modal-user">
+          <img id="testimonialModalImg" src="" alt="User" />
+          <div class="testimonial-modal-username" id="testimonialModalUser">User Name</div>
+        </div>
+        <div class="testimonial-modal-review" id="testimonialModalReview">Review text goes here.</div>
+      </div>
     </div>
     <div class="testimonial-caption">
       <h3>Trusted by leaders<br>from various industries</h3>
@@ -127,14 +129,82 @@
   </section>
 
   <!-- Contact Section -->
-  <section class="contact" id="contact">
-    <div class="container">
-      <h2>Contact Us</h2>
-      <p>550 Beauty Lane, Your City, Country</p>
-      <p>Phone: 123-456-7890</p>
-      <p>Email: info@niteshaparlor.com</p>
+  <section class="section contact-section" id="contact">
+    <div class="contact-container">
+        <div class="contact-info">
+            <div>
+                <h2 class="contact-title">Contact Info</h2>
+                <ul class="contact-details">
+                    <li class="contact-item">
+                        <div class="contact-icon">
+                            <i class="ri-mail-send-fill"></i>
+                        </div>
+                        <div class="conatcct-method">
+                            <span>E-mail</span>
+                            <h4>prerak2557@gmail.com</h4>
+                            <a href="mailto:prerak2557@gmail.com" target="_blank"><span>Send <i class="ri-arrow-right-up-line"></i></span></a>
+                        </div>
+                    </li>
+                    <li class="contact-item">
+                        <div class="contact-icon">
+                            <i class="ri-whatsapp-fill"></i>
+                        </div>
+                        <div class="conatcct-method">
+                            <span>Whatsapp</span>
+                            <h4>+61 474-441-815</h4>
+                            <a href="https://wa.me/+61474441815?text=Hello%20there!%20How%20are%20you?" target="_blank"><span>Send <i class="ri-arrow-right-up-line"></i></span></a>
+                        </div>
+                    </li>
+                    <li class="contact-item">
+                        <div class="contact-icon">
+                            <i class="ri-phone-fill"></i>
+                        </div>
+                        <div class="conatcct-method">
+                            <span>Call</span>
+                            <h4>+61 474-441-815</h4>
+                            <a href="tel:61474441815" target="_blank"><span>Call Me <i class="ri-arrow-right-up-line"></i></span></a>
+                        </div>
+                    </li>
+                    <li class="contact-social">
+                        <a href="https://www.linkedin.com/in/prerak-patel-5695a3195/" target="_blank" class="home-social-link">
+                            <i class="ri-linkedin-fill"></i>
+                        </a>
+                        <a href="https://github.com/prerak-26" target="_blank" class="home-social-link">
+                            <i class="ri-github-fill"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="contact-form">
+            <h2 class="form-title">Let's Work</h2>
+            <form id="prerak-contact-form">
+                <div class="form-box">
+                    <div class="input-box w50">
+                        <input name="fullname" type="text" class="form-input" required>
+                        <span class="form-span">Full Name *</span>
+                    </div>
+                    <div class="input-box w50">
+                        <input type="email" name="email" class="form-input" required>
+                        <span class="form-span">Email Address *</span>
+                    </div>
+                    <div class="input-box w100">
+                        <input type="text" name="subject" class="form-input" required>
+                        <span class="form-span">Your Subject *</span>
+                    </div>
+                    <div class="input-box w100">
+                        <textarea class="form-text" name="message" required></textarea>
+                        <span class="form-span">Write Your message here.....</span>
+                    </div>
+                    <div class="input-box submit-box">
+                        <button class="form-input" type="submit" name="submit">Send Message</button>
+                        <div class="submit-text"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-  </section>
+</section>
 
   <!-- Footer -->
   <footer>

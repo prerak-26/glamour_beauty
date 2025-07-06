@@ -132,3 +132,103 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
   
+// --- Testimonial Modal Logic ---
+const testimonialData = [
+  {
+    img: 'assets/bg-1.jpg',
+    name: 'Priya Sharma',
+    review: 'Absolutely loved my experience! The staff is so friendly and professional.'
+  },
+  {
+    img: 'assets/bg-2.jpg',
+    name: 'Ayesha Khan',
+    review: 'The best salon in town. My go-to place for all beauty needs.'
+  },
+  {
+    img: 'assets/bg-3.jpg',
+    name: 'Simran Patel',
+    review: 'Clean, modern, and relaxing. Highly recommend their facial treatments!'
+  },
+  {
+    img: 'assets/bg-4.jpg',
+    name: 'Neha Gupta',
+    review: 'The bridal package was perfect. Thank you for making my day special!'
+  },
+  {
+    img: 'assets/bg-5.jpg',
+    name: 'Riya Mehta',
+    review: 'Amazing hair stylists. I always leave feeling fabulous.'
+  },
+  {
+    img: 'assets/bg-6.jpg',
+    name: 'Sana Ali',
+    review: 'Superb service and attention to detail. Will visit again!'
+  },
+  {
+    img: 'assets/bg-7.jpg',
+    name: 'Anjali Desai',
+    review: 'Love the ambiance and the staff. My nails have never looked better.'
+  },
+  {
+    img: 'assets/bg-8.jpg',
+    name: 'Meera Joshi',
+    review: 'The makeup artists are true professionals. Highly recommended.'
+  },
+  {
+    img: 'assets/bg-9.jpg',
+    name: 'Pooja Singh',
+    review: 'A hidden gem! The spa services are so relaxing.'
+  },
+  {
+    img: 'assets/service-beauty.jpg',
+    name: 'Nisha Verma',
+    review: 'I always get compliments after my visits here. Thank you!'
+  },
+  {
+    img: 'assets/service-bridal.jpg',
+    name: 'Zara Sheikh',
+    review: 'The bridal team is outstanding. My wedding look was flawless.'
+  },
+  // Additional demo testimonials
+];
+
+// Dynamically render testimonial cards
+const testimonialCollage = document.getElementById('testimonialCollage');
+testimonialCollage.innerHTML = testimonialData.map((data, idx) => {
+  return `<div class="testimonial-card card${idx+1}" data-user="user${idx+1}">
+    <img src="${data.img}" alt="${data.name}" />
+  </div>`;
+}).join('');
+
+const testimonialCards = document.querySelectorAll('.testimonial-card');
+const testimonialModal = document.getElementById('testimonialModal');
+const testimonialModalImg = document.getElementById('testimonialModalImg');
+const testimonialModalUser = document.getElementById('testimonialModalUser');
+const testimonialModalReview = document.getElementById('testimonialModalReview');
+const testimonialModalClose = document.getElementById('testimonialModalClose');
+const testimonialSection = document.querySelector('.testimonial-section');
+
+// Open modal on card click
+testimonialCards.forEach((card, idx) => {
+  card.addEventListener('click', function() {
+    const data = testimonialData[idx];
+    testimonialModalImg.src = data.img;
+    testimonialModalUser.textContent = data.name;
+    testimonialModalReview.textContent = data.review;
+    testimonialModal.style.display = 'flex';
+    testimonialSection.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+// Close modal
+function closeTestimonialModal() {
+  testimonialModal.style.display = 'none';
+  testimonialSection.classList.remove('modal-open');
+  document.body.style.overflow = '';
+}
+testimonialModalClose.addEventListener('click', closeTestimonialModal);
+testimonialModal.addEventListener('click', function(e) {
+  if (e.target === testimonialModal) closeTestimonialModal();
+});
+  
