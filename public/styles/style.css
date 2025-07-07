@@ -845,6 +845,7 @@ footer {
   align-items: center;
   width: 100%;
   gap: 5rem;
+  margin-top: 5rem;
 }
 
 .home-social-link{
@@ -886,7 +887,7 @@ footer {
   letter-spacing: 1px;
 }
 .form-title::after {
-  content: ' Together';
+  content: 'Touch';
   color: red;
 }
 
@@ -966,4 +967,116 @@ footer {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+}
+
+/* =========================
+   MEDIA QUERIES FOR DEVICES
+   ========================= */
+
+/* Small Device Phones (320px - 480px) */
+@media (max-width: 480px) {
+  .nav-links {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .section-title {
+    font-size: 1.3rem;
+  }
+  .container {
+    padding: 0 0.5rem;
+  }
+  .book-btn, .cta-btn {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Medium Device Phones (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* Tablets/iPads (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .section-title {
+    font-size: 2rem;
+  }
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Laptops/Small Screens (1024px - 1199px) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .section-title {
+    font-size: 2.2rem;
+  }
+}
+
+/* Desktops/Large Screens (1200px - 1919px) */
+@media (min-width: 1200px) and (max-width: 1919px) {
+  .section-title {
+    font-size: 2.5rem;
+  }
+}
+
+/* Extra-large Devices (1920px and above) */
+@media (min-width: 1920px) {
+  .section-title {
+    font-size: 2.7rem;
+  }
+}
+
+/* =========================
+   RESPONSIVE NAVBAR
+   ========================= */
+
+/* Always hide hamburger on desktop */
+.hamburger {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-color, #000);
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem 0 1rem 0;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transition: all 0.3s;
+  }
+  .navbar.nav-open .nav-links {
+    display: flex;
+  }
+  .hamburger {
+    display: block;
+    cursor: pointer;
+    z-index: 1100;
+  }
+  .hamburger-icon {
+    font-size: 2.2rem;
+    color: var(--primary-color, #fff);
+    transition: color 0.2s;
+    pointer-events: none;
+  }
+  .hamburger.nav-open .hamburger-icon {
+    color: var(--accent-color, #f00);
+  }
+  /* Hide nav-links inline for mobile */
+  .nav-links li {
+    width: 100%;
+    text-align: center;
+  }
 }

@@ -1,29 +1,5 @@
-// Hero images setup
-const images = [
-    { src: 'assets/bg-1.jpg', alt: 'Salon 1', class: 'collage-img img1' },
-    { src: 'assets/bg-2.jpg', alt: 'Salon 2', class: 'collage-img img2' },
-    { src: 'assets/bg-3.jpg', alt: 'Salon 3', class: 'collage-img img3' },
-    { src: 'assets/bg-4.jpg', alt: 'Salon 4', class: 'collage-img img4' },
-    { src: 'assets/bg-5.jpg', alt: 'Salon 5', class: 'collage-img img5' },
-    { src: 'assets/bg-6.jpg', alt: 'Salon 6', class: 'collage-img img6' },
-    { src: 'assets/bg-7.jpg', alt: 'Salon 7', class: 'collage-img img7' },
-    { src: 'assets/bg-8.jpg', alt: 'Salon 8', class: 'collage-img img8' },
-    { src: 'assets/bg-9.jpg', alt: 'Salon 9', class: 'collage-img img9' },
-];
+import { images, services, testimonialData } from "./data.js";
 
-const services = [{
-    name: 'Salon',
-    image: 'assets/service-hair.jpg'
-},
-{
-    name: 'Beauty',
-    image: 'assets/service-beauty.jpg'
-},
-{
-    name: 'Bridal',
-    image: 'assets/service-bridal.jpg'
-},
-];
 
 function createGridLayout(images) {
     let layoutHtml = '';
@@ -51,146 +27,7 @@ function createServiceCards(services) {
 
 document.querySelector('.new-service-cards').innerHTML = createServiceCards(services);
 
-// Scroll header function
-function scrollHeader() {
-    const navbar = document.querySelector('.navbar');
-    if (this.scrollY >= 50) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-}
-
-window.addEventListener('scroll', scrollHeader);
-
-// Mobile menu functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
-    
-    // Mobile menu toggle
-    hamburger.addEventListener('click', function() {
-        navLinks.classList.toggle('active');
-        hamburger.classList.toggle('active');
-    });
-    
-    // Close mobile menu when clicking on a link
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.addEventListener('click', function() {
-            navLinks.classList.remove('active');
-            hamburger.classList.remove('active');
-        });
-    });
-    
-    // Close mobile menu when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!navbar.contains(e.target)) {
-            navLinks.classList.remove('active');
-            hamburger.classList.remove('active');
-        }
-    });
-});
-
-// Smooth scrolling for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Add intersection observer for animations (excluding hero images)
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, observerOptions);
-
-// Observe elements for animation (excluding hero images)
-document.addEventListener('DOMContentLoaded', function() {
-    const animateElements = document.querySelectorAll('.service-card, .review-card, .gallery-images img');
-    
-    animateElements.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-        observer.observe(el);
-    });
-});
-  
 // --- Testimonial Modal Logic ---
-const testimonialData = [
-  {
-    img: 'assets/bg-1.jpg',
-    name: 'Priya Sharma',
-    review: 'Absolutely loved my experience! The staff is so friendly and professional.'
-  },
-  {
-    img: 'assets/bg-2.jpg',
-    name: 'Ayesha Khan',
-    review: 'The best salon in town. My go-to place for all beauty needs.'
-  },
-  {
-    img: 'assets/bg-3.jpg',
-    name: 'Simran Patel',
-    review: 'Clean, modern, and relaxing. Highly recommend their facial treatments!'
-  },
-  {
-    img: 'assets/bg-4.jpg',
-    name: 'Neha Gupta',
-    review: 'The bridal package was perfect. Thank you for making my day special!'
-  },
-  {
-    img: 'assets/bg-5.jpg',
-    name: 'Riya Mehta',
-    review: 'Amazing hair stylists. I always leave feeling fabulous.'
-  },
-  {
-    img: 'assets/bg-6.jpg',
-    name: 'Sana Ali',
-    review: 'Superb service and attention to detail. Will visit again!'
-  },
-  {
-    img: 'assets/bg-7.jpg',
-    name: 'Anjali Desai',
-    review: 'Love the ambiance and the staff. My nails have never looked better.'
-  },
-  {
-    img: 'assets/bg-8.jpg',
-    name: 'Meera Joshi',
-    review: 'The makeup artists are true professionals. Highly recommended.'
-  },
-  {
-    img: 'assets/bg-9.jpg',
-    name: 'Pooja Singh',
-    review: 'A hidden gem! The spa services are so relaxing.'
-  },
-  {
-    img: 'assets/service-beauty.jpg',
-    name: 'Nisha Verma',
-    review: 'I always get compliments after my visits here. Thank you!'
-  },
-  {
-    img: 'assets/service-bridal.jpg',
-    name: 'Zara Sheikh',
-    review: 'The bridal team is outstanding. My wedding look was flawless.'
-  },
-  // Additional demo testimonials
-];
 
 // Dynamically render testimonial cards
 const testimonialCollage = document.getElementById('testimonialCollage');
@@ -230,5 +67,127 @@ function closeTestimonialModal() {
 testimonialModalClose.addEventListener('click', closeTestimonialModal);
 testimonialModal.addEventListener('click', function(e) {
   if (e.target === testimonialModal) closeTestimonialModal();
+});
+  
+
+// Scroll header function
+function scrollHeader() {
+    const navbar = document.querySelector('.navbar');
+    if (this.scrollY >= 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+}
+
+window.addEventListener('scroll', scrollHeader);
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+  
+
+// --- EmailJS Contact Form Functionality ---
+
+// Initialize EmailJS with your Public ID
+(function() {
+    emailjs.init('OCdc7bWSseTVrZaXx'); // Public ID
+})();
+
+// Contact form handling
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('prerak-contact-form');
+    const submitButton = contactForm.querySelector('button[type="submit"]');
+    const submitText = contactForm.querySelector('.submit-text');
+    
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+        submitText.textContent = '';
+        
+        // Get form data and map to template variables
+        const formData = {
+            name: contactForm.querySelector('input[name="fullname"]').value,
+            email: contactForm.querySelector('input[name="email"]').value,
+            title: contactForm.querySelector('input[name="subject"]').value,
+            message: contactForm.querySelector('textarea[name="message"]').value
+        };
+        
+        // Send email using EmailJS
+        emailjs.send('service_t9yzygj', 'template_0rs3l8w', formData)
+        .then(function(response) {
+            // Success
+            submitButton.textContent = 'Message Sent!';
+            submitText.textContent = ' Your message has been sent successfully.';
+            submitText.style.color = '#28a745';
+            
+            // Reset form
+            contactForm.reset();
+            
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
+                submitText.textContent = '';
+            }, 3000);
+        })
+        .catch(function(error) {
+            // Error
+            submitButton.textContent = 'Send Message';
+            submitText.textContent = 'Sorry, there was an error. Please try again.';
+            submitText.style.color = '#dc3545';
+            submitButton.disabled = false;
+            
+            console.error('EmailJS Error:', error);
+        });
+    });
+});
+  
+
+// --- Make Service Cards Clickable ---
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for service cards to be rendered
+  const serviceBlocks = document.querySelectorAll('.service-block');
+  // IDs must match those in service.js: 1, 2, 3
+  const categoryIds = [1, 2, 3]; // 1: Salon, 2: Beauty, 3: Bridal
+  serviceBlocks.forEach((block, idx) => {
+    if (categoryIds[idx]) {
+      block.style.cursor = 'pointer';
+      block.addEventListener('click', function() {
+        window.location.href = `service.html?category=${categoryIds[idx]}`;
+      });
+    }
+  });
+});
+  
+document.addEventListener('DOMContentLoaded', function() {
+  const navbar = document.querySelector('.navbar');
+  const hamburger = document.querySelector('.hamburger');
+  const hamburgerIcon = hamburger ? hamburger.querySelector('.hamburger-icon') : null;
+  if (navbar && hamburger && hamburgerIcon) {
+    hamburger.addEventListener('click', function() {
+      navbar.classList.toggle('nav-open');
+      if (navbar.classList.contains('nav-open')) {
+        hamburgerIcon.classList.remove('ri-function-line');
+        hamburgerIcon.classList.add('ri-close-line');
+      } else {
+        hamburgerIcon.classList.remove('ri-close-line');
+        hamburgerIcon.classList.add('ri-function-line');
+      }
+    });
+  }
 });
   
