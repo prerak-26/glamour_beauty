@@ -127,52 +127,14 @@
    MEDIA QUERIES FOR DEVICES
    ========================= */
 
-/* Small Device Phones (320px - 480px) */
-@media (max-width: 480px) {
-  .service-cards {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+@media (max-width: 576px){
+  .svc-details-wrapper{
+    grid-template-columns: auto;
   }
-  .service-card {
-    padding: 1rem;
-    font-size: 1rem;
+  .svc-details-img-col{
+    background: transparent;
   }
-}
-
-/* Medium Device Phones (481px - 767px) */
-@media (min-width: 481px) and (max-width: 767px) {
-  .service-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
-  }
-}
-
-/* Tablets/iPads (768px - 1023px) */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .service-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-  }
-}
-
-/* Laptops/Small Screens (1024px - 1199px) */
-@media (min-width: 1024px) and (max-width: 1199px) {
-  .service-cards {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-}
-
-/* Desktops/Large Screens (1200px - 1919px) */
-@media (min-width: 1200px) and (max-width: 1919px) {
-  .service-cards {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-}
-
-/* Extra-large Devices (1920px and above) */
-@media (min-width: 1920px) {
-  .service-cards {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
+  .svc-info-btn{
+    width: 55%;
   }
 }

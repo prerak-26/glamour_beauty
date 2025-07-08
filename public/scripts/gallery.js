@@ -1,5 +1,8 @@
 // public/scripts/gallery.js
 
+import { initResponsiveNavbar } from './navbar.js';
+initResponsiveNavbar();
+
 const galleryImages = [
   'assets/bg-1.jpg',
   'assets/bg-2.jpg',
@@ -24,103 +27,118 @@ function renderGallery() {
   `).join('');
 }
 
+function setupHorizontalScroll() {
+  const gallerySection = document.querySelector('.gallery-section');
+  const galleryGrid = document.getElementById('gallery-grid');
+  const horizontalWrapper = document.querySelector('.gallery-horizontal-wrapper');
+  const gridWidth = galleryGrid.scrollWidth;
+  const viewportWidth = window.innerWidth;
+  const wrapperHeight = horizontalWrapper.offsetHeight;
+  // Get width of one image wrapper and gap
+  const firstImgWrapper = galleryGrid.querySelector('.gallery-img-wrapper');
+  let wrapperWidth = 0;
+  let wrapperGap = 0;
+  if (firstImgWrapper) {
+    const wrapperStyle = window.getComputedStyle(firstImgWrapper);
+    wrapperWidth = firstImgWrapper.offsetWidth;
+    // Try to get gap from flex or margin-right
+    const gridStyle = window.getComputedStyle(galleryGrid);
+    wrapperGap = parseInt(gridStyle.gap || wrapperStyle.marginRight || 0) || 0;
+  }
+  // Adjust scrollLength so last image is fully visible
+  const scrollLength = gridWidth - viewportWidth;
+
+  // Set the section height to scrollLength + horizontalWrapper.offsetTop + horizontalWrapper.offsetHeight
+  // This ensures the gallery ends right above the footer, even with large images
+  gallerySection.style.height = (scrollLength + horizontalWrapper.offsetTop + horizontalWrapper.offsetHeight + 40) + 'px';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.to(galleryGrid, {
+    x: () => `-${scrollLength}px`,
+    ease: "none",
+    scrollTrigger: {
+      trigger: gallerySection,
+      pin: horizontalWrapper, // Pin only the image grid wrapper
+      start: "top top",
+      end: () => `+=${scrollLength}`,
+      scrub: 1,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+    }
+  });
+
+  // Lenis smooth scroll
+  const lenis = new window.Lenis({
+    lerp: 0.07,
+    wheelMultiplier: 1,
+    smooth: true,
+  });
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  lenis.on('scroll', ScrollTrigger.update);
+}
+
+function setupVerticalStaggeredAnimation() {
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.utils.toArray('.gallery-img-wrapper').forEach((el, i) => {
+    gsap.from(el, {
+      opacity: 0,
+      y: 40,
+      duration: 0.7,
+      delay: i * 0.1,
+      scrollTrigger: {
+        trigger: el,
+        start: "top 90%",
+        toggleActions: "play none none none"
+      }
+    });
+  });
+  // Optional: Lenis smooth scroll for mobile/tablet
+  if (window.Lenis) {
+    const lenis = new window.Lenis({
+      lerp: 0.07,
+      wheelMultiplier: 1,
+      smooth: true,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  }
+}
+
+function getDeviceType() {
+  return window.innerWidth <= 576 ? 'phone' : 'horizontal';
+}
+
+let lastDeviceType = getDeviceType();
+
+function setupGalleryAnimation() {
+  const deviceType = getDeviceType();
+  if (deviceType === 'horizontal') {
+    setupHorizontalScroll();
+  } else {
+    setupVerticalStaggeredAnimation();
+  }
+}
+
+function handleResize() {
+  const currentType = getDeviceType();
+  if (currentType !== lastDeviceType) {
+    location.reload();
+  }
+}
+
+window.addEventListener('resize', handleResize);
+
 document.addEventListener('DOMContentLoaded', () => {
   renderGallery();
-
-  // Only apply horizontal scroll on desktop
-  if (window.innerWidth > 900) {
-    const gallerySection = document.querySelector('.gallery-section');
-    const galleryGrid = document.getElementById('gallery-grid');
-    const horizontalWrapper = document.querySelector('.gallery-horizontal-wrapper');
-
-    // Wait for images to load for accurate width
-    const images = galleryGrid.querySelectorAll('img');
-    let imagesLoaded = 0;
-    images.forEach(img => {
-      img.onload = img.onerror = () => {
-        imagesLoaded++;
-        if (imagesLoaded === images.length) setupHorizontalScroll();
-      };
-    });
-    if (images.length === 0) setupHorizontalScroll();
-
-    function setupHorizontalScroll() {
-      const gallerySection = document.querySelector('.gallery-section');
-      const galleryGrid = document.getElementById('gallery-grid');
-      const horizontalWrapper = document.querySelector('.gallery-horizontal-wrapper');
-      const gridWidth = galleryGrid.scrollWidth;
-      const viewportWidth = window.innerWidth;
-      const wrapperHeight = horizontalWrapper.offsetHeight;
-      // Get width of one image wrapper and gap
-      const firstImgWrapper = galleryGrid.querySelector('.gallery-img-wrapper');
-      let wrapperWidth = 0;
-      let wrapperGap = 0;
-      if (firstImgWrapper) {
-        const wrapperStyle = window.getComputedStyle(firstImgWrapper);
-        wrapperWidth = firstImgWrapper.offsetWidth;
-        // Try to get gap from flex or margin-right
-        const gridStyle = window.getComputedStyle(galleryGrid);
-        wrapperGap = parseInt(gridStyle.gap || wrapperStyle.marginRight || 0) || 0;
-      }
-      // Adjust scrollLength so last image is fully visible
-      const scrollLength = gridWidth - viewportWidth + wrapperWidth + wrapperGap;
-
-      if (scrollLength <= 0) {
-        console.log('[Gallery] No horizontal scroll needed.');
-        return;
-      }
-
-      // Set the section height to scrollLength + horizontalWrapper.offsetTop + horizontalWrapper.offsetHeight
-      // This ensures the gallery ends right above the footer, even with large images
-      gallerySection.style.height = (scrollLength + horizontalWrapper.offsetTop + horizontalWrapper.offsetHeight) + 'px';
-      console.log('[Gallery] Section height set to:', gallerySection.style.height, 'scrollLength:', scrollLength);
-
-      gsap.registerPlugin(ScrollTrigger);
-
-      gsap.to(galleryGrid, {
-        x: () => `-${scrollLength}px`,
-        ease: "none",
-        scrollTrigger: {
-          trigger: gallerySection,
-          pin: horizontalWrapper, // Pin only the image grid wrapper
-          start: "top top",
-          end: () => `+=${scrollLength}`,
-          scrub: 1,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: self => {
-            console.log('[Gallery] Scroll progress:', self.progress.toFixed(2));
-            if (self.progress === 1) {
-              console.log('[Gallery] Reached end of gallery scroll. window.scrollY:', window.scrollY, 'Section height:', gallerySection.style.height);
-            }
-          }
-        }
-      });
-
-      // Lenis smooth scroll
-      const lenis = new window.Lenis({
-        lerp: 0.07,
-        wheelMultiplier: 1,
-        smooth: true,
-      });
-
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-
-      lenis.on('scroll', ScrollTrigger.update);
-
-      // Only reload on width change
-      let lastWidth = window.innerWidth;
-      window.addEventListener('resize', () => {
-        if (window.innerWidth !== lastWidth) {
-          location.reload();
-          lastWidth = window.innerWidth;
-        }
-      });
-      console.log('[Gallery] Horizontal scroll setup complete. gridWidth:', gridWidth, 'scrollLength:', scrollLength);
-    }
-  }
+  setupGalleryAnimation();
 }); 

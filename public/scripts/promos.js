@@ -1,5 +1,8 @@
 // public/scripts/promos.js
 
+import { initResponsiveNavbar } from './navbar.js';
+initResponsiveNavbar();
+
 const promos = [
   {
     id: 1,

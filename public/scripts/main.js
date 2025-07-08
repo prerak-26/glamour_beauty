@@ -1,4 +1,6 @@
 import { images, services, testimonialData } from "./data.js";
+import { initResponsiveNavbar } from './navbar.js';
+initResponsiveNavbar();
 
 
 function createGridLayout(images) {
@@ -171,23 +173,5 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
-});
-  
-document.addEventListener('DOMContentLoaded', function() {
-  const navbar = document.querySelector('.navbar');
-  const hamburger = document.querySelector('.hamburger');
-  const hamburgerIcon = hamburger ? hamburger.querySelector('.hamburger-icon') : null;
-  if (navbar && hamburger && hamburgerIcon) {
-    hamburger.addEventListener('click', function() {
-      navbar.classList.toggle('nav-open');
-      if (navbar.classList.contains('nav-open')) {
-        hamburgerIcon.classList.remove('ri-function-line');
-        hamburgerIcon.classList.add('ri-close-line');
-      } else {
-        hamburgerIcon.classList.remove('ri-close-line');
-        hamburgerIcon.classList.add('ri-function-line');
-      }
-    });
-  }
 });
   

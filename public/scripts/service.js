@@ -1,5 +1,7 @@
 // public/scripts/service.js
 import { serviceData } from "./data.js";
+import { initResponsiveNavbar } from './navbar.js';
+initResponsiveNavbar();
 // Get category ID from URL
 function getCategoryId() {
   const params = new URLSearchParams(window.location.search);
