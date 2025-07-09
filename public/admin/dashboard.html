@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="styles/admin.css">
+</head>
+<body>
+  <div class="admin-dashboard">
+    <aside class="admin-sidebar">
+      <h2>Admin Panel</h2>
+      <ul class="admin-nav">
+        <li data-section="services" class="active">Services</li>
+        <li data-section="promos">Promos</li>
+        <li data-section="gallery">Gallery</li>
+        <li data-section="reviews">Reviews</li>
+        <li data-section="enquiries">Enquiries</li>
+      </ul>
+      <button id="logout-btn">Logout</button>
+    </aside>
+    <main class="admin-main-content">
+      <div id="section-title-bar">
+        <h2 id="section-title">Service</h2>
+        <button id="add-new-btn" class="add-new-btn">Add New</button>
+      </div>
+      <div id="section-content">
+        <!-- The table will be rendered here by JS -->
+      </div>
+    </main>
+  </div>
+  <script type="module" src="scripts/admin.js"></script>
+</body>
+</html> 

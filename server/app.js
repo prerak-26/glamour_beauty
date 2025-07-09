@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 // Load environment variables
 dotenv.config();
@@ -24,91 +25,145 @@ console.log('[Checkpoint] Express app initialized');
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// Register new admin
+app.post('/api/admin/register', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
+
+  // Check if email already exists
+  const { data: existing, error: findError } = await supabase
+    .from('admin_users')
+    .select('*')
+    .eq('email', email);
+
+  if (findError) return res.status(500).json({ error: 'Database error.' });
+  if (existing && existing.length > 0) return res.status(400).json({ error: 'Email already registered.' });
+
+  // Hash the password
+  const password_hash = await bcrypt.hash(password, 10);
+
+  // Insert new admin
+  const { data, error } = await supabase
+    .from('admin_users')
+    .insert([{ email, password_hash }])
+    .select();
+
+  if (error) return res.status(500).json({ error: 'Registration failed.' });
+
+  res.json({ success: true, user: data[0] });
+});
+
+// Admin login
+app.post('/api/admin/login', async (req, res) => {
+  const { email, password } = req.body;
+  console.log('[LOGIN] Attempt for email:', email);
+  if (!email || !password) {
+    console.log('[LOGIN] Missing email or password');
+    return res.status(400).json({ error: 'Email and password required.' });
+  }
+
+  // Find user by email
+  const { data: users, error: findError } = await supabase
+    .from('admin_users')
+    .select('*')
+    .eq('email', email);
+
+  if (findError) {
+    console.log('[LOGIN] Database error:', findError.message);
+    return res.status(500).json({ error: 'Database error.' });
+  }
+  if (!users || users.length === 0) {
+    console.log('[LOGIN] No user found for email:', email);
+    return res.status(400).json({ error: 'Invalid credentials.' });
+  }
+
+  const user = users[0];
+  console.log('[LOGIN] User found:', user.email, '| Hash:', user.password_hash);
+  // Compare password
+  const match = await bcrypt.compare(password, user.password_hash);
+  console.log('[LOGIN] Password match:', match);
+  if (!match) {
+    console.log('[LOGIN] Password does not match for email:', email);
+    return res.status(400).json({ error: 'Invalid credentials.' });
+  }
+
+  // Success
+  console.log('[LOGIN] Success for email:', email);
+  res.json({ success: true, user: { id: user.id, email: user.email } });
+});
+
 // Health check route
 app.get('/', (req, res) => {
   console.log('[Checkpoint] Health check route accessed');
   res.send('Server is running and connected to Supabase!');
 });
 
-// GET /services - fetch all services
+// GET /services - fetch all services in id order
 app.get('/services', async (req, res) => {
-  console.log('[Checkpoint] /services route accessed');
   try {
     const { data, error } = await supabase
       .from('services')
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true }); // Always order by id
     if (error) {
-      console.error('[Error] Supabase fetch failed:', error.message);
       return res.status(500).json({ error: 'Failed to fetch services' });
     }
-    console.log(`[Checkpoint] Fetched ${data.length} services from Supabase`);
     res.json(data);
   } catch (err) {
-    console.error('[Error] Unexpected error in /services:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // POST /services - create a new service
 app.post('/services', async (req, res) => {
-  console.log('[Checkpoint] POST /services route accessed');
-  const { name, description, price, image_url } = req.body;
-
-  // Basic validation
+  const { name, description, price, image_url, category_id } = req.body;
+  const categoryIdNum = Number(category_id);
   if (!name || !price) {
-    console.error('[Error] Missing required fields: name or price');
     return res.status(400).json({ error: 'Name and price are required' });
   }
-
   try {
     const { data, error } = await supabase
       .from('services')
-      .insert([{ name, description, price, image_url }])
-      .select(); // .select() returns the inserted data
-
+      .insert([{ name, description, price, image_url, category_id: categoryIdNum }])
+      .select();
     if (error) {
-      console.error('[Error] Supabase insert failed:', error.message);
       return res.status(500).json({ error: 'Failed to create service' });
     }
-
-    console.log('[Checkpoint] Created new service:', data[0]);
     res.status(201).json(data[0]);
   } catch (err) {
-    console.error('[Error] Unexpected error in POST /services:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // PUT /services/:id - update a service by ID
 app.put('/services/:id', async (req, res) => {
-  console.log('[Checkpoint] PUT /services/:id route accessed');
   const { id } = req.params;
-  const { name, description, price, image_url } = req.body;
-
-  // Basic validation
-  if (!name && !description && !price && !image_url) {
-    console.error('[Error] No fields provided for update');
+  const { name, description, price, image_url, category_id } = req.body;
+  const categoryIdNum = category_id !== undefined ? Number(category_id) : undefined;
+  if (!name && !description && !price && !image_url && category_id === undefined) {
     return res.status(400).json({ error: 'At least one field is required to update' });
   }
-
+  // Build update object
+  const updateObj = {};
+  if (name !== undefined) updateObj.name = name;
+  if (description !== undefined) updateObj.description = description;
+  if (price !== undefined) updateObj.price = price;
+  if (image_url !== undefined) updateObj.image_url = image_url;
+  if (category_id !== undefined) updateObj.category_id = categoryIdNum;
   try {
     const { data, error } = await supabase
       .from('services')
-      .update({ name, description, price, image_url })
+      .update(updateObj)
       .eq('id', id)
       .select();
     if (error) {
-      console.error('[Error] Supabase update failed:', error.message);
       return res.status(500).json({ error: 'Failed to update service' });
     }
     if (!data || data.length === 0) {
-      console.warn('[Warning] No service found with id:', id);
       return res.status(404).json({ error: 'Service not found' });
     }
-    console.log('[Checkpoint] Updated service:', data[0]);
     res.json(data[0]);
   } catch (err) {
-    console.error('[Error] Unexpected error in PUT /services/:id:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
