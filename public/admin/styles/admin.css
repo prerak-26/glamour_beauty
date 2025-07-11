@@ -170,7 +170,7 @@ button[type="submit"]:hover {
   top: 0;
   width: 100vw;
   height: 100vh;
-  overflow: auto;
+  overflow: hidden;
   background: rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
@@ -178,23 +178,52 @@ button[type="submit"]:hover {
 }
 .modal-content {
   background: #fff;
-  padding: 2rem 2.5rem;
+  padding: 2.5rem 1.2rem 1.5rem 1.2rem;
   border-radius: 8px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.12);
   position: relative;
   min-width: 320px;
+  max-width: 98vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 .close-modal {
   position: absolute;
-  top: 12px;
-  right: 18px;
-  font-size: 1.5rem;
+  top: 1.2rem;
+  right: 1.2rem;
+  font-size: 2rem;
   color: #888;
   cursor: pointer;
   font-weight: bold;
+  z-index: 1101;
+  background: none;
+  border: none;
+  padding: 0.2rem;
+  border-radius: 50%;
+  transition: background 0.2s;
 }
 .close-modal:hover {
   color: #e11d48;
+  background: rgba(220,0,0,0.08);
+}
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+  padding: 0 1.5rem 0 0.5rem;
+}
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100vw;
 }
 .success-message {
   color: #22c55e;
@@ -223,4 +252,239 @@ button[type="submit"]:hover {
   margin: 0 auto;
   border: none;
   background: none;
+} 
+
+/* Admin Header and Sidebar Toggle */
+.admin-header {
+  display: none;
+}
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0.5rem 0.7rem;
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 1201;
+}
+.admin-header-title {
+  margin: 0 auto;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: #222;
+  letter-spacing: 1px;
+}
+.sidebar-close {
+  display: none;
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  z-index: 1400;
+  padding: 0.3rem;
+  color: #fff;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.sidebar-close:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* =========================
+   RESPONSIVE ADMIN PANEL
+   ========================= */
+
+@media (max-width: 900px) {
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 56px;
+    background: #fff;
+    z-index: 1200;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .sidebar-toggle {
+    display: block;
+  }
+  .sidebar-close {
+    display: block;
+  }
+  .admin-dashboard {
+    flex-direction: column;
+    height: auto;
+  }
+  .admin-sidebar {
+    position: fixed;
+    left: -100vw;
+    top: 0;
+    width: 60vw;
+    max-width: 320px;
+    min-width: 200px;
+    height: 100vh;
+    z-index: 1300;
+    background: #4f46e5;
+    color: #fff;
+    box-shadow: 2px 0 16px rgba(0,0,0,0.18);
+    transition: left 0.5s cubic-bezier(.4,1.2,.4,1), background 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2rem 1.5rem;
+    padding-top: 3.5rem;
+  }
+  .admin-sidebar.open {
+    left: 0;
+  }
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.25);
+    z-index: 1299;
+  }
+  .sidebar-overlay.active {
+    display: block;
+  }
+  .admin-main-content {
+    width: 100%;
+    padding: 1.5rem 1rem;
+    margin-top: 56px;
+  }
+  .modal {
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 2vh;
+    top: 3rem;
+  }
+  .modal-content {
+    min-width: 0;
+    width: 96vw;
+    max-width: 98vw;
+    max-height: 96vh;
+    overflow-y: auto;
+    padding: 2.5rem 0.7rem 1.5rem 0.7rem;
+    box-sizing: border-box;
+  }
+  /* Make logout button stick to bottom */
+  .admin-sidebar {
+    justify-content: flex-start;
+  }
+  #logout-btn {
+    margin-top: auto;
+    margin-bottom: 1.5rem;
+    width: 95%;
+    align-self: center;
+  }
+  .admin-login-form{
+    width: 90%;
+  }
+  .form-group input{
+    width: 80%;
+  }
+}
+
+@media (min-width: 901px) {
+  .sidebar-close {
+    display: none !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-header-title {
+    font-size: 1.1rem;
+  }
+  .admin-sidebar {
+    width: 80vw;
+    min-width: 0;
+    padding: 1.2rem 0.7rem;
+  }
+  .admin-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .admin-nav li {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.5rem;
+  }
+  #logout-btn {
+    margin-left: 0;
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 0.5rem 0.7rem;
+  }
+  .admin-main-content {
+    padding: 1rem 0.3rem;
+    font-size: 0.98rem;
+  }
+  .admin-table th, .admin-table td {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.95rem;
+  }
+  .modal {
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 1vh;
+  }
+  .modal-content {
+    min-width: 0;
+    width: 99vw;
+    max-width: 99vw;
+    max-height: 99vh;
+    padding: 2.5rem 0.2rem 1.5rem 0.2rem;
+    box-sizing: border-box;
+  }
+  .close-modal {
+    top: 0.7rem;
+    right: 0.7rem;
+    font-size: 2rem;
+  }
+  .modal-content h2 {
+    font-size: 1.1rem;
+    padding: 0 0.5rem 0 0.5rem;
+  }
+  .admin-login-form {
+    width: 95vw;
+    padding: 1rem 0.5rem;
+  }
+}
+
+@media (min-width: 1441px) {
+  .admin-dashboard {
+    max-width: 1600px;
+    margin: 0 auto;
+    height: 90vh;
+  }
+  .admin-sidebar {
+    max-width: 400px;
+    font-size: 1.2rem;
+    padding: 3rem 2.5rem;
+  }
+  .admin-main-content {
+    padding: 4rem 5rem;
+    font-size: 1.15rem;
+  }
+  .admin-table th, .admin-table td {
+    font-size: 1.1rem;
+    padding: 1.3rem 1.2rem;
+  }
+  .modal-content {
+    min-width: 420px;
+    padding: 3rem 3.5rem;
+  }
 } 

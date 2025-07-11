@@ -196,7 +196,8 @@ function createModal(section, mode, rowData = {}, onSubmit) {
                 ${field.options.map(opt => `<option value="${opt.value}" ${rowData[field.name] == opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
               </select>
             </div>`;
-          } else if (field.type === 'file') {
+          }
+          if (field.type === 'file') {
             return `<div class="form-group">
               <label for="${field.name}">${field.label}</label>
               <input type="file" id="${field.name}" name="${field.name}" accept="${field.accept}" ${mode === 'add' ? 'required' : ''}>
@@ -220,8 +221,9 @@ function createModal(section, mode, rowData = {}, onSubmit) {
     </div>
   `;
   document.body.appendChild(modal);
-  document.getElementById('close-crud-modal').onclick = () => modal.remove();
-  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+  document.body.classList.add('modal-open');
+  document.getElementById('close-crud-modal').onclick = () => { modal.remove(); document.body.classList.remove('modal-open'); };
+  modal.onclick = e => { if (e.target === modal) { modal.remove(); document.body.classList.remove('modal-open'); } };
   document.getElementById('crud-form').onsubmit = async function(e) {
     e.preventDefault();
     const formData = new FormData();
@@ -328,6 +330,37 @@ document.addEventListener('DOMContentLoaded', function() {
   const addNewBtn = document.getElementById('add-new-btn');
   const sectionContent = document.getElementById('section-content');
   let currentSection = 'services';
+
+  // Sidebar toggle logic for mobile/tablet
+  const sidebar = document.querySelector('.admin-sidebar');
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+  const sidebarClose = document.getElementById('sidebar-close');
+  function openSidebar() {
+    sidebar.classList.add('open');
+    sidebarOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (sidebarClose) sidebarClose.style.display = 'block';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+    if (sidebarClose) sidebarClose.style.display = 'none';
+  }
+  if (sidebarToggle && sidebar && sidebarOverlay) {
+    sidebarToggle.addEventListener('click', openSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+  }
+  if (sidebarClose) {
+    sidebarClose.addEventListener('click', closeSidebar);
+  }
+  // Close sidebar when a nav item is clicked (on mobile/tablet)
+  navItems.forEach(item => {
+    item.addEventListener('click', function() {
+      if (window.innerWidth <= 900) closeSidebar();
+    });
+  });
 
   async function renderSectionTable(section) {
     sectionContent.innerHTML = `

@@ -38,7 +38,7 @@ async function renderService() {
           <div class="svc-info-name">${service.name}</div>
           <div class="svc-info-desc">${service.description || 'Professional service'}</div>
           <div class="svc-info-price">₹${service.price}</div>
-          <button class="svc-info-btn">Enquire More</button>
+          <button class="svc-info-btn"><a href="https://wa.me/+917046577262?text=Hello%20there!%20I%20want%20to%20know%20more%about%20${service.name}?" target="_blank"><span>Enquire More</span></a></button>
         </div>
       </div>
     `).join('');
