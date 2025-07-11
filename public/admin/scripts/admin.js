@@ -270,60 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // --- Registration Modal Logic ---
-  const showRegister = document.getElementById('show-register');
-  const registerModal = document.getElementById('register-modal');
-  const closeRegister = document.getElementById('close-register');
-  const registerForm = document.getElementById('register-form');
-  const registerError = document.getElementById('register-error');
-  const registerSuccess = document.getElementById('register-success');
-
-  if (showRegister && registerModal && closeRegister) {
-    showRegister.addEventListener('click', function(e) {
-      e.preventDefault();
-      registerModal.style.display = 'flex';
-      registerError.textContent = '';
-      registerSuccess.textContent = '';
-      registerForm.reset();
-    });
-    closeRegister.addEventListener('click', function() {
-      registerModal.style.display = 'none';
-    });
-    window.addEventListener('click', function(e) {
-      if (e.target === registerModal) {
-        registerModal.style.display = 'none';
-      }
-    });
-  }
-
-  if (registerForm) {
-    registerForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      registerError.textContent = '';
-      registerSuccess.textContent = '';
-      const email = document.getElementById('register-email').value.trim();
-      const password = document.getElementById('register-password').value;
-      const confirm = document.getElementById('register-confirm').value;
-      if (password !== confirm) {
-        registerError.textContent = 'Passwords do not match.';
-        return;
-      }
-      try {
-        const result = await registerAdmin(email, password);
-        if (result.error) {
-          registerError.textContent = result.error;
-        } else {
-          registerSuccess.textContent = 'Registration successful! You can now log in.';
-          setTimeout(() => {
-            registerModal.style.display = 'none';
-          }, 1500);
-        }
-      } catch (err) {
-        registerError.textContent = 'Registration failed. Please try again.';
-      }
-    });
-  }
-
   // --- Dashboard Navigation Logic ---
   const navItems = document.querySelectorAll('.admin-nav li');
   const sectionTitle = document.getElementById('section-title');

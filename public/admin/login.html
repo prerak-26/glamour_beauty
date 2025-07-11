@@ -21,37 +21,8 @@
       </div>
       <button type="submit">Login</button>
       <div id="login-error" class="error-message"></div>
-      <div class="register-link">
-        New admin? <a href="#" id="show-register">Register here</a>
-      </div>
     </form>
   </div>
-
-  <!-- Registration Modal -->
-  <div id="register-modal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="close-modal" id="close-register">&times;</span>
-      <form id="register-form" class="admin-login-form">
-        <h2>Register Admin</h2>
-        <div class="form-group">
-          <label for="register-email">Email</label>
-          <input type="email" id="register-email" name="register-email" required>
-        </div>
-        <div class="form-group">
-          <label for="register-password">Password</label>
-          <input type="password" id="register-password" name="register-password" required>
-        </div>
-        <div class="form-group">
-          <label for="register-confirm">Confirm Password</label>
-          <input type="password" id="register-confirm" name="register-confirm" required>
-        </div>
-        <button type="submit">Register</button>
-        <div id="register-error" class="error-message"></div>
-        <div id="register-success" class="success-message"></div>
-      </form>
-    </div>
-  </div>
-
   <script type="module" src="scripts/admin.js"></script>
 </body>
 </html> 
