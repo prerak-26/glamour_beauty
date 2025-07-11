@@ -131,9 +131,6 @@
   .svc-details-wrapper{
     grid-template-columns: auto;
   }
-  .svc-details-img-col{
-    background: transparent;
-  }
   .svc-info-btn{
     width: 55%;
   }
