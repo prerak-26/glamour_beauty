@@ -14,8 +14,9 @@ async function renderService() {
   const detailsList = document.getElementById('svc-details-list');
 
   try {
+    const API_BASE = window.API_BASE || 'http://localhost:5000';
     // Fetch services from API
-    const response = await fetch('http://localhost:5000/services');
+    const response = await fetch(`${API_BASE}/services`);
     const services = await response.json();
     
     // Filter services by category

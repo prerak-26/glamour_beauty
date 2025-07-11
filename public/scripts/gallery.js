@@ -6,8 +6,9 @@ initResponsiveNavbar();
 async function renderGallery() {
   const grid = document.getElementById('gallery-grid');
   try {
+    const API_BASE = window.API_BASE || 'http://localhost:5000';
     // Fetch gallery images from API
-    const response = await fetch('http://localhost:5000/gallery');
+    const response = await fetch(`${API_BASE}/gallery`);
     const galleryData = await response.json();
 
     if (galleryData.length === 0) {

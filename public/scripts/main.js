@@ -24,7 +24,7 @@ async function createServiceCards() {
     let services = [];
     try {
         // Fetch services from API
-        const response = await fetch('http://localhost:5000/services');
+        const response = await fetch(`${API_BASE}/services`);
         services = await response.json();
     } catch (error) {
         console.error('Error fetching services:', error);
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Send both EmailJS and backend request in parallel
         Promise.all([
             emailjs.send('service_t9yzygj', 'template_0rs3l8w', formData),
-            fetch('http://localhost:5000/enquiries', {
+            fetch(`${API_BASE}/enquiries`, {
                 method: 'POST',
                 body: backendData,
                 headers: {

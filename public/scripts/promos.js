@@ -13,8 +13,9 @@ async function renderPromos() {
   const grid = document.getElementById('promo-grid');
   
   try {
+    const API_BASE = window.API_BASE || 'http://localhost:5000';
     // Fetch promos from API
-    const response = await fetch('http://localhost:5000/promos');
+    const response = await fetch(`${API_BASE}/promos`);
     const promos = await response.json();
     
     // Filter promos by category

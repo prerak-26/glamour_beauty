@@ -1,6 +1,6 @@
 // public/admin/scripts/api.js
 
-const API_BASE = 'http://localhost:5000'; // Adjust if your backend is on a different path
+const API_BASE = window.API_BASE || 'http://localhost:5000'; // Adjust if your backend is on a different path
 
 // --- GENERIC CRUD FUNCTIONS ---
 
