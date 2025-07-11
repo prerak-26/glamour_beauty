@@ -9,29 +9,45 @@ const tableOptions = {
   enquiries: ['Name', 'Email', 'Message', 'Date', 'Update', 'Delete']
 };
 
+// Category configurations for different sections
+const categoryConfigs = {
+  services: {
+    fieldName: 'category_id',
+    options: [
+      { value: '1', label: 'Salon' },
+      { value: '2', label: 'Beauty' },
+      { value: '3', label: 'Bridal' }
+    ]
+  },
+  promos: {
+    fieldName: 'promo_category',
+    options: [
+      { value: '1', label: 'Combos' },
+      { value: '2', label: 'Festival Promos' },
+      { value: '3', label: 'Special' }
+    ]
+  }
+};
+
 // Field configs for forms (for add/update)
 const fieldConfigs = {
   services: [
     { name: 'name', label: 'Name', type: 'text' },
     { name: 'description', label: 'Description', type: 'text' },
     { name: 'price', label: 'Price', type: 'number' },
-    { name: 'image_url', label: 'Image URL', type: 'text' },
-    { name: 'category_id', label: 'Category', type: 'select', options: [
-      { value: '1', label: 'Salon' },
-      { value: '2', label: 'Beauty' },
-      { value: '3', label: 'Bridal' }
-    ] }
+    { name: 'image_file', label: 'Image', type: 'file', accept: 'image/*' },
+    { name: 'category_id', label: 'Category', type: 'select', options: categoryConfigs.services.options }
   ],
   promos: [
     { name: 'name', label: 'Name', type: 'text' },
     { name: 'price', label: 'Price', type: 'number' },
-    { name: 'image_url', label: 'Image URL', type: 'text' },
+    { name: 'image_file', label: 'Image', type: 'file', accept: 'image/*' },
     { name: 'start_date', label: 'Start Date', type: 'date' },
     { name: 'end_date', label: 'End Date', type: 'date' },
-    { name: 'promo_category', label: 'Promo Category', type: 'number' }
+    { name: 'promo_category', label: 'Promo Category', type: 'select', options: categoryConfigs.promos.options }
   ],
   gallery: [
-    { name: 'image_url', label: 'Image URL', type: 'text' },
+    { name: 'image_file', label: 'Image', type: 'file', accept: 'image/*' },
     { name: 'caption', label: 'Caption', type: 'text' }
   ],
   reviews: [
@@ -48,6 +64,24 @@ const fieldConfigs = {
   ]
 };
 
+// Utility function to get category label
+function getCategoryLabel(section, categoryValue) {
+  const config = categoryConfigs[section];
+  if (!config) return '';
+  
+  const option = config.options.find(opt => opt.value == categoryValue);
+  return option ? option.label : '';
+}
+
+// Utility function to convert form value to number for category fields
+function convertCategoryValue(section, fieldName, value) {
+  const config = categoryConfigs[section];
+  if (config && fieldName === config.fieldName) {
+    return Number(value);
+  }
+  return value;
+}
+
 function renderTableHeader(section) {
   const headers = tableOptions[section] || [];
   return `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
@@ -63,16 +97,13 @@ function renderServiceRows(data = []) {
       <td>${row.description || ''}</td>
       <td>${row.price || ''}</td>
       <td>${row.image_url ? `<img src="${row.image_url}" alt="Service Image" style="max-width:60px;max-height:40px;">` : ''}</td>
-      <td>
-        ${row.category_id === 1 ? 'Salon' :
-         row.category_id === 2 ? 'Beauty' :
-         row.category_id === 3 ? 'Bridal' : ''}
-      </td>
+      <td>${getCategoryLabel('services', row.category_id)}</td>
       <td><button class="update-btn" data-id="${row.id}">Update</button></td>
       <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
     </tr>
   `).join('');
 }
+
 function renderPromoRows(data = []) {
   if (!data.length) {
     return `<tr><td colspan="${tableOptions.promos.length}" style="text-align:center; color:#888;">No data available</td></tr>`;
@@ -84,12 +115,13 @@ function renderPromoRows(data = []) {
       <td>${row.image_url ? `<img src="${row.image_url}" alt="Promo Image" style="max-width:60px;max-height:40px;">` : ''}</td>
       <td>${row.start_date || ''}</td>
       <td>${row.end_date || ''}</td>
-      <td>${row.promo_category || ''}</td>
+      <td>${getCategoryLabel('promos', row.promo_category)}</td>
       <td><button class="update-btn" data-id="${row.id}">Update</button></td>
       <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
     </tr>
   `).join('');
 }
+
 function renderGalleryRows(data = []) {
   if (!data.length) {
     return `<tr><td colspan="${tableOptions.gallery.length}" style="text-align:center; color:#888;">No data available</td></tr>`;
@@ -103,6 +135,7 @@ function renderGalleryRows(data = []) {
     </tr>
   `).join('');
 }
+
 function renderReviewRows(data = []) {
   if (!data.length) {
     return `<tr><td colspan="${tableOptions.reviews.length}" style="text-align:center; color:#888;">No data available</td></tr>`;
@@ -118,20 +151,28 @@ function renderReviewRows(data = []) {
     </tr>
   `).join('');
 }
+
 function renderEnquiryRows(data = []) {
   if (!data.length) {
     return `<tr><td colspan="${tableOptions.enquiries.length}" style="text-align:center; color:#888;">No data available</td></tr>`;
   }
-  return data.map(row => `
-    <tr>
-      <td>${row.name || ''}</td>
-      <td>${row.email || ''}</td>
-      <td>${row.message || ''}</td>
-      <td>${row.date || ''}</td>
-      <td><button class="update-btn" data-id="${row.id}">Update</button></td>
-      <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
-    </tr>
-  `).join('');
+  return data.map(row => {
+    // Format date to yyyy-mm-dd only
+    let formattedDate = row.date || '';
+    if (formattedDate && formattedDate.includes('T')) {
+      formattedDate = formattedDate.split('T')[0];
+    }
+    return `
+      <tr>
+        <td>${row.name || ''}</td>
+        <td>${row.email || ''}</td>
+        <td>${row.message || ''}</td>
+        <td>${formattedDate}</td>
+        <td><button class="update-btn" data-id="${row.id}">Update</button></td>
+        <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // --- Modal for Add/Update ---
@@ -155,10 +196,21 @@ function createModal(section, mode, rowData = {}, onSubmit) {
                 ${field.options.map(opt => `<option value="${opt.value}" ${rowData[field.name] == opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
               </select>
             </div>`;
-          } else {
+          } else if (field.type === 'file') {
             return `<div class="form-group">
               <label for="${field.name}">${field.label}</label>
-              <input type="${field.type}" id="${field.name}" name="${field.name}" value="${rowData[field.name] || ''}" ${field.type === 'number' ? 'step="any"' : ''} required>
+              <input type="file" id="${field.name}" name="${field.name}" accept="${field.accept}" ${mode === 'add' ? 'required' : ''}>
+              ${rowData.image_url ? `<p>Current image: <img src="${rowData.image_url}" alt="Current" style="max-width:100px;max-height:60px;"></p>` : ''}
+            </div>`;
+          } else {
+            let value = rowData[field.name] || '';
+            // Convert datetime strings to date format for date inputs
+            if (field.type === 'date' && value && value.includes('T')) {
+              value = value.split('T')[0];
+            }
+            return `<div class="form-group">
+              <label for="${field.name}">${field.label}</label>
+              <input type="${field.type}" id="${field.name}" name="${field.name}" value="${value}" ${field.type === 'number' ? 'step="any"' : ''} required>
             </div>`;
           }
         }).join('')}
@@ -172,13 +224,18 @@ function createModal(section, mode, rowData = {}, onSubmit) {
   modal.onclick = e => { if (e.target === modal) modal.remove(); };
   document.getElementById('crud-form').onsubmit = async function(e) {
     e.preventDefault();
-    const formData = {};
+    const formData = new FormData();
     fieldConfigs[section].forEach(field => {
-      let value = this[field.name].value;
-      if (section === 'services' && field.name === 'category_id') {
-        value = Number(value);
+      if (field.type === 'file') {
+        const fileInput = this[field.name];
+        if (fileInput.files && fileInput.files.length > 0) {
+          formData.append('image', fileInput.files[0]);
+        }
+      } else {
+        let value = this[field.name].value;
+        value = convertCategoryValue(section, field.name, value);
+        formData.append(field.name, value);
       }
-      formData[field.name] = value;
     });
     try {
       await onSubmit(formData);
@@ -283,68 +340,49 @@ document.addEventListener('DOMContentLoaded', function() {
         </tbody>
       </table>
     `;
+    
     let data = [];
-    if (section === 'services') {
-      data = await getAll('services');
-      sectionContent.innerHTML = `
-        <table class="admin-table">
-          <thead>
-            ${renderTableHeader('services')}
-          </thead>
-          <tbody>
-            ${renderServiceRows(data)}
-          </tbody>
-        </table>
-      `;
-    } else if (section === 'promos') {
-      data = await getAll('promos');
-      sectionContent.innerHTML = `
-        <table class="admin-table">
-          <thead>
-            ${renderTableHeader('promos')}
-          </thead>
-          <tbody>
-            ${renderPromoRows(data)}
-          </tbody>
-        </table>
-      `;
-    } else if (section === 'gallery') {
-      data = await getAll('gallery');
-      sectionContent.innerHTML = `
-        <table class="admin-table">
-          <thead>
-            ${renderTableHeader('gallery')}
-          </thead>
-          <tbody>
-            ${renderGalleryRows(data)}
-          </tbody>
-        </table>
-      `;
-    } else if (section === 'reviews') {
-      data = await getAll('reviews');
-      sectionContent.innerHTML = `
-        <table class="admin-table">
-          <thead>
-            ${renderTableHeader('reviews')}
-          </thead>
-          <tbody>
-            ${renderReviewRows(data)}
-          </tbody>
-        </table>
-      `;
-    } else if (section === 'enquiries') {
-      data = await getAll('enquiries');
-      sectionContent.innerHTML = `
-        <table class="admin-table">
-          <thead>
-            ${renderTableHeader('enquiries')}
-          </thead>
-          <tbody>
-            ${renderEnquiryRows(data)}
-          </tbody>
-        </table>
-      `;
+    let rowRenderer;
+    
+    // Get data and determine row renderer
+    switch (section) {
+      case 'services':
+        data = await getAll('services');
+        rowRenderer = renderServiceRows;
+        break;
+      case 'promos':
+        data = await getAll('promos');
+        rowRenderer = renderPromoRows;
+        break;
+      case 'gallery':
+        data = await getAll('gallery');
+        rowRenderer = renderGalleryRows;
+        break;
+      case 'reviews':
+        data = await getAll('reviews');
+        rowRenderer = renderReviewRows;
+        break;
+      case 'enquiries':
+        data = await getAll('enquiries');
+        rowRenderer = renderEnquiryRows;
+        break;
+      default:
+        data = [];
+        rowRenderer = () => `<tr><td colspan="${tableOptions[section].length}" style="text-align:center; color:#888;">No data available</td></tr>`;
     }
+    
+    // Render the table with data
+    sectionContent.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          ${renderTableHeader(section)}
+        </thead>
+        <tbody>
+          ${rowRenderer(data)}
+        </tbody>
+      </table>
+    `;
+    
     // Add event listeners for update/delete buttons
     sectionContent.querySelectorAll('.update-btn').forEach(btn => {
       btn.onclick = () => {

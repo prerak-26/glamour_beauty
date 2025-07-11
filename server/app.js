@@ -19,11 +19,26 @@ console.log('[Checkpoint] Supabase client initialized');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 console.log('[Checkpoint] Express app initialized');
 
 // Multer setup for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
 
 // Register new admin
 app.post('/api/admin/register', async (req, res) => {
@@ -115,42 +130,114 @@ app.get('/services', async (req, res) => {
 });
 
 // POST /services - create a new service
-app.post('/services', async (req, res) => {
-  const { name, description, price, image_url, category_id } = req.body;
+app.post('/services', upload.single('image'), async (req, res) => {
+  console.log('[POST /services] Request received');
+  const { name, description, price, category_id } = req.body;
   const categoryIdNum = Number(category_id);
+  const file = req.file;
+
+  console.log('[POST /services] Body data:', { name, description, price, category_id });
+  console.log('[POST /services] File:', file ? { originalname: file.originalname, mimetype: file.mimetype, size: file.size } : 'No file');
+
   if (!name || !price) {
+    console.log('[POST /services] Missing required fields');
     return res.status(400).json({ error: 'Name and price are required' });
   }
+  if (!file) {
+    console.log('[POST /services] No file uploaded');
+    return res.status(400).json({ error: 'Image file is required' });
+  }
+
   try {
+    // Generate a unique filename
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}_${file.originalname}`;
+    console.log('[POST /services] Generated filename:', filename);
+
+    // Upload to Supabase Storage (bucket: image)
+    console.log('[POST /services] Attempting to upload to Supabase storage...');
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from('image')
+      .upload(filename, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (storageError) {
+      console.error('[POST /services] Supabase Storage upload failed:', storageError);
+      return res.status(500).json({ error: 'Failed to upload image to storage: ' + storageError.message });
+    }
+
+    console.log('[POST /services] File uploaded successfully to storage');
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage.from('image').getPublicUrl(filename);
+    const image_url = publicUrlData.publicUrl;
+    console.log('[POST /services] Public URL:', image_url);
+
+    // Insert into services table
+    console.log('[POST /services] Inserting into services table...');
     const { data, error } = await supabase
       .from('services')
       .insert([{ name, description, price, image_url, category_id: categoryIdNum }])
       .select();
+
     if (error) {
-      return res.status(500).json({ error: 'Failed to create service' });
+      console.error('[POST /services] Database insert failed:', error);
+      return res.status(500).json({ error: 'Failed to create service: ' + error.message });
     }
+
+    console.log('[POST /services] Service created successfully:', data[0]);
     res.status(201).json(data[0]);
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('[POST /services] Unexpected error:', err);
+    res.status(500).json({ error: 'Internal server error: ' + err.message });
   }
 });
 
 // PUT /services/:id - update a service by ID
-app.put('/services/:id', async (req, res) => {
+app.put('/services/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, image_url, category_id } = req.body;
+  const { name, description, price, category_id } = req.body;
   const categoryIdNum = category_id !== undefined ? Number(category_id) : undefined;
-  if (!name && !description && !price && !image_url && category_id === undefined) {
+  const file = req.file;
+
+  if (!name && !description && !price && !file && category_id === undefined) {
     return res.status(400).json({ error: 'At least one field is required to update' });
   }
+
   // Build update object
   const updateObj = {};
   if (name !== undefined) updateObj.name = name;
   if (description !== undefined) updateObj.description = description;
   if (price !== undefined) updateObj.price = price;
-  if (image_url !== undefined) updateObj.image_url = image_url;
   if (category_id !== undefined) updateObj.category_id = categoryIdNum;
+
   try {
+    // If a new image is uploaded
+    if (file) {
+      // Generate a unique filename
+      const ext = path.extname(file.originalname);
+      const filename = `${Date.now()}_${file.originalname}`;
+
+      // Upload to Supabase Storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('image')
+        .upload(filename, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (storageError) {
+        console.error('[Error] Supabase Storage upload failed:', storageError.message);
+        return res.status(500).json({ error: 'Failed to upload image to storage' });
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage.from('image').getPublicUrl(filename);
+      updateObj.image_url = publicUrlData.publicUrl;
+    }
+
     const { data, error } = await supabase
       .from('services')
       .update(updateObj)
@@ -164,6 +251,47 @@ app.put('/services/:id', async (req, res) => {
     }
     res.json(data[0]);
   } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /upload - upload file to Supabase storage
+app.post('/upload', upload.single('file'), async (req, res) => {
+  const file = req.file;
+  const { bucket = 'image' } = req.body;
+
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  try {
+    // Generate a unique filename
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}_${file.originalname}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filename, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (error) {
+      console.error('[Error] Supabase Storage upload failed:', error.message);
+      return res.status(500).json({ error: 'Failed to upload file' });
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(filename);
+    
+    res.json({ 
+      success: true, 
+      url: publicUrlData.publicUrl,
+      filename: filename
+    });
+  } catch (err) {
+    console.error('[Error] Unexpected error in upload:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -200,7 +328,8 @@ app.get('/promos', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('promos')
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true }); // Ensure consistent ordering
     if (error) {
       console.error('[Error] Supabase fetch failed:', error.message);
       return res.status(500).json({ error: 'Failed to fetch promos' });
@@ -214,43 +343,118 @@ app.get('/promos', async (req, res) => {
 });
 
 // POST /promos - create a new promo
-app.post('/promos', async (req, res) => {
+app.post('/promos', upload.single('image'), async (req, res) => {
   console.log('[Checkpoint] POST /promos route accessed');
-  const { name, price, image_url, start_date, end_date } = req.body;
+  const { name, price, start_date, end_date, promo_category } = req.body;
+  const file = req.file;
+
+  console.log('[POST /promos] Body data:', { name, price, start_date, end_date, promo_category });
+  console.log('[POST /promos] File:', file ? { originalname: file.originalname, mimetype: file.mimetype, size: file.size } : 'No file');
+
   if (!name || !price) {
-    console.error('[Error] Missing required fields: name or price');
+    console.log('[POST /promos] Missing required fields');
     return res.status(400).json({ error: 'Name and price are required' });
   }
+  if (!file) {
+    console.log('[POST /promos] No file uploaded');
+    return res.status(400).json({ error: 'Image file is required' });
+  }
+
   try {
+    // Generate a unique filename
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}_${file.originalname}`;
+    console.log('[POST /promos] Generated filename:', filename);
+
+    // Upload to Supabase Storage (bucket: image)
+    console.log('[POST /promos] Attempting to upload to Supabase storage...');
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from('image')
+      .upload(filename, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (storageError) {
+      console.error('[POST /promos] Supabase Storage upload failed:', storageError);
+      return res.status(500).json({ error: 'Failed to upload image to storage: ' + storageError.message });
+    }
+
+    console.log('[POST /promos] File uploaded successfully to storage');
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage.from('image').getPublicUrl(filename);
+    const image_url = publicUrlData.publicUrl;
+    console.log('[POST /promos] Public URL:', image_url);
+
+    // Insert into promos table
+    console.log('[POST /promos] Inserting into promos table...');
     const { data, error } = await supabase
       .from('promos')
-      .insert([{ name, price, image_url, start_date, end_date }])
+      .insert([{ name, price, image_url, start_date, end_date, promo_category }])
       .select();
+
     if (error) {
-      console.error('[Error] Supabase insert failed:', error.message);
-      return res.status(500).json({ error: 'Failed to create promo' });
+      console.error('[POST /promos] Database insert failed:', error);
+      return res.status(500).json({ error: 'Failed to create promo: ' + error.message });
     }
-    console.log('[Checkpoint] Created new promo:', data[0]);
+
+    console.log('[POST /promos] Promo created successfully:', data[0]);
     res.status(201).json(data[0]);
   } catch (err) {
-    console.error('[Error] Unexpected error in POST /promos:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('[POST /promos] Unexpected error:', err);
+    res.status(500).json({ error: 'Internal server error: ' + err.message });
   }
 });
 
 // PUT /promos/:id - update a promo by ID
-app.put('/promos/:id', async (req, res) => {
+app.put('/promos/:id', upload.single('image'), async (req, res) => {
   console.log('[Checkpoint] PUT /promos/:id route accessed');
   const { id } = req.params;
-  const { name, price, image_url, start_date, end_date } = req.body;
-  if (!name && !price && !image_url && !start_date && !end_date) {
+  const { name, price, start_date, end_date, promo_category } = req.body;
+  const file = req.file;
+
+  if (!name && !price && !file && !start_date && !end_date && promo_category === undefined) {
     console.error('[Error] No fields provided for update');
     return res.status(400).json({ error: 'At least one field is required to update' });
   }
+
+  // Build update object
+  const updateObj = {};
+  if (name !== undefined) updateObj.name = name;
+  if (price !== undefined) updateObj.price = price;
+  if (start_date !== undefined) updateObj.start_date = start_date;
+  if (end_date !== undefined) updateObj.end_date = end_date;
+  if (promo_category !== undefined) updateObj.promo_category = promo_category;
+
   try {
+    // If a new image is uploaded
+    if (file) {
+      // Generate a unique filename
+      const ext = path.extname(file.originalname);
+      const filename = `${Date.now()}_${file.originalname}`;
+
+      // Upload to Supabase Storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('image')
+        .upload(filename, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (storageError) {
+        console.error('[Error] Supabase Storage upload failed:', storageError.message);
+        return res.status(500).json({ error: 'Failed to upload image to storage' });
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage.from('image').getPublicUrl(filename);
+      updateObj.image_url = publicUrlData.publicUrl;
+    }
+
     const { data, error } = await supabase
       .from('promos')
-      .update({ name, price, image_url, start_date, end_date })
+      .update(updateObj)
       .eq('id', id)
       .select();
     if (error) {
@@ -301,7 +505,8 @@ app.get('/gallery', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('gallery')
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true }); // Ensure consistent ordering
     if (error) {
       console.error('[Error] Supabase fetch failed:', error.message);
       return res.status(500).json({ error: 'Failed to fetch gallery' });
@@ -315,43 +520,110 @@ app.get('/gallery', async (req, res) => {
 });
 
 // POST /gallery - add a new gallery image
-app.post('/gallery', async (req, res) => {
+app.post('/gallery', upload.single('image'), async (req, res) => {
   console.log('[Checkpoint] POST /gallery route accessed');
-  const { image_url, caption } = req.body;
-  if (!image_url) {
-    console.error('[Error] Missing required field: image_url');
-    return res.status(400).json({ error: 'Image URL is required' });
+  const { caption } = req.body;
+  const file = req.file;
+
+  console.log('[POST /gallery] Body data:', { caption });
+  console.log('[POST /gallery] File:', file ? { originalname: file.originalname, mimetype: file.mimetype, size: file.size } : 'No file');
+
+  if (!file) {
+    console.log('[POST /gallery] No file uploaded');
+    return res.status(400).json({ error: 'Image file is required' });
   }
+
   try {
+    // Generate a unique filename
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}_${file.originalname}`;
+    console.log('[POST /gallery] Generated filename:', filename);
+
+    // Upload to Supabase Storage (bucket: image)
+    console.log('[POST /gallery] Attempting to upload to Supabase storage...');
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from('image')
+      .upload(filename, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (storageError) {
+      console.error('[POST /gallery] Supabase Storage upload failed:', storageError);
+      return res.status(500).json({ error: 'Failed to upload image to storage: ' + storageError.message });
+    }
+
+    console.log('[POST /gallery] File uploaded successfully to storage');
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage.from('image').getPublicUrl(filename);
+    const image_url = publicUrlData.publicUrl;
+    console.log('[POST /gallery] Public URL:', image_url);
+
+    // Insert into gallery table
+    console.log('[POST /gallery] Inserting into gallery table...');
     const { data, error } = await supabase
       .from('gallery')
       .insert([{ image_url, caption }])
       .select();
+
     if (error) {
-      console.error('[Error] Supabase insert failed:', error.message);
-      return res.status(500).json({ error: 'Failed to add gallery image' });
+      console.error('[POST /gallery] Database insert failed:', error);
+      return res.status(500).json({ error: 'Failed to add gallery image: ' + error.message });
     }
-    console.log('[Checkpoint] Added new gallery image:', data[0]);
+
+    console.log('[POST /gallery] Gallery image added successfully:', data[0]);
     res.status(201).json(data[0]);
   } catch (err) {
-    console.error('[Error] Unexpected error in POST /gallery:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('[POST /gallery] Unexpected error:', err);
+    res.status(500).json({ error: 'Internal server error: ' + err.message });
   }
 });
 
 // PUT /gallery/:id - update a gallery image by ID
-app.put('/gallery/:id', async (req, res) => {
+app.put('/gallery/:id', upload.single('image'), async (req, res) => {
   console.log('[Checkpoint] PUT /gallery/:id route accessed');
   const { id } = req.params;
-  const { image_url, caption } = req.body;
-  if (!image_url && !caption) {
+  const { caption } = req.body;
+  const file = req.file;
+
+  if (!caption && !file) {
     console.error('[Error] No fields provided for update');
     return res.status(400).json({ error: 'At least one field is required to update' });
   }
+
+  // Build update object
+  const updateObj = {};
+  if (caption !== undefined) updateObj.caption = caption;
+
   try {
+    // If a new image is uploaded
+    if (file) {
+      // Generate a unique filename
+      const ext = path.extname(file.originalname);
+      const filename = `${Date.now()}_${file.originalname}`;
+
+      // Upload to Supabase Storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('image')
+        .upload(filename, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (storageError) {
+        console.error('[Error] Supabase Storage upload failed:', storageError.message);
+        return res.status(500).json({ error: 'Failed to upload image to storage' });
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage.from('image').getPublicUrl(filename);
+      updateObj.image_url = publicUrlData.publicUrl;
+    }
+
     const { data, error } = await supabase
       .from('gallery')
-      .update({ image_url, caption })
+      .update(updateObj)
       .eq('id', id)
       .select();
     if (error) {
@@ -446,7 +718,8 @@ app.get('/reviews', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true }); // Ensure consistent ordering
     if (error) {
       console.error('[Error] Supabase fetch failed:', error.message);
       return res.status(500).json({ error: 'Failed to fetch reviews' });
@@ -460,21 +733,32 @@ app.get('/reviews', async (req, res) => {
 });
 
 // POST /reviews - create a new review
-app.post('/reviews', async (req, res) => {
+app.post('/reviews', upload.none(), async (req, res) => {
   console.log('[Checkpoint] POST /reviews route accessed');
   const { name, rating, comment, date } = req.body;
+  
+  console.log('[POST /reviews] Body data:', { name, rating, comment, date });
+  
   if (!name || !rating) {
     console.error('[Error] Missing required fields: name or rating');
     return res.status(400).json({ error: 'Name and rating are required' });
   }
+  
+  // Convert rating to number and validate
+  const ratingNum = Number(rating);
+  if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    console.error('[Error] Invalid rating value:', rating);
+    return res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+  }
+  
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .insert([{ name, rating, comment, date }])
+      .insert([{ name, rating: ratingNum, comment, date }])
       .select();
     if (error) {
       console.error('[Error] Supabase insert failed:', error.message);
-      return res.status(500).json({ error: 'Failed to create review' });
+      return res.status(500).json({ error: 'Failed to create review: ' + error.message });
     }
     console.log('[Checkpoint] Created new review:', data[0]);
     res.status(201).json(data[0]);
@@ -485,23 +769,43 @@ app.post('/reviews', async (req, res) => {
 });
 
 // PUT /reviews/:id - update a review by ID
-app.put('/reviews/:id', async (req, res) => {
+app.put('/reviews/:id', upload.none(), async (req, res) => {
   console.log('[Checkpoint] PUT /reviews/:id route accessed');
   const { id } = req.params;
   const { name, rating, comment, date } = req.body;
+  
+  console.log('[PUT /reviews] Body data:', { name, rating, comment, date });
+  
   if (!name && !rating && !comment && !date) {
     console.error('[Error] No fields provided for update');
     return res.status(400).json({ error: 'At least one field is required to update' });
   }
+  
+  // Build update object
+  const updateObj = {};
+  if (name !== undefined) updateObj.name = name;
+  if (comment !== undefined) updateObj.comment = comment;
+  if (date !== undefined) updateObj.date = date;
+  
+  // Handle rating validation if provided
+  if (rating !== undefined) {
+    const ratingNum = Number(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      console.error('[Error] Invalid rating value:', rating);
+      return res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+    }
+    updateObj.rating = ratingNum;
+  }
+  
   try {
     const { data, error } = await supabase
       .from('reviews')
-      .update({ name, rating, comment, date })
+      .update(updateObj)
       .eq('id', id)
       .select();
     if (error) {
       console.error('[Error] Supabase update failed:', error.message);
-      return res.status(500).json({ error: 'Failed to update review' });
+      return res.status(500).json({ error: 'Failed to update review: ' + error.message });
     }
     if (!data || data.length === 0) {
       console.warn('[Warning] No review found with id:', id);
@@ -547,7 +851,8 @@ app.get('/enquiries', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('enquiries')
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true }); // Ensure consistent ordering
     if (error) {
       console.error('[Error] Supabase fetch failed:', error.message);
       return res.status(500).json({ error: 'Failed to fetch enquiries' });

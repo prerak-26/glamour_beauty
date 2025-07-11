@@ -26,57 +26,57 @@ const services = [{
 
 const testimonialData = [
     {
-      img: 'assets/bg-1.jpg',
+      img: 'assets/girl1.png',
       name: 'Priya Sharma',
       review: 'Absolutely loved my experience! The staff is so friendly and professional.'
     },
     {
-      img: 'assets/bg-2.jpg',
+      img: 'assets/girl2.png',
       name: 'Ayesha Khan',
       review: 'The best salon in town. My go-to place for all beauty needs.'
     },
     {
-      img: 'assets/bg-3.jpg',
+      img: 'assets/girl1.png',
       name: 'Simran Patel',
       review: 'Clean, modern, and relaxing. Highly recommend their facial treatments!'
     },
     {
-      img: 'assets/bg-4.jpg',
+      img: 'assets/girl2.png',
       name: 'Neha Gupta',
       review: 'The bridal package was perfect. Thank you for making my day special!'
     },
     {
-      img: 'assets/bg-5.jpg',
+      img: 'assets/girl1.png',
       name: 'Riya Mehta',
       review: 'Amazing hair stylists. I always leave feeling fabulous.'
     },
     {
-      img: 'assets/bg-6.jpg',
+      img: 'assets/girl2.png',
       name: 'Sana Ali',
       review: 'Superb service and attention to detail. Will visit again!'
     },
     {
-      img: 'assets/bg-7.jpg',
+      img: 'assets/girl1.png',
       name: 'Anjali Desai',
       review: 'Love the ambiance and the staff. My nails have never looked better.'
     },
     {
-      img: 'assets/bg-8.jpg',
+      img: 'assets/girl2.png',
       name: 'Meera Joshi',
       review: 'The makeup artists are true professionals. Highly recommended.'
     },
     {
-      img: 'assets/bg-9.jpg',
+      img: 'assets/girl1.png',
       name: 'Pooja Singh',
       review: 'A hidden gem! The spa services are so relaxing.'
     },
     {
-      img: 'assets/service-beauty.jpg',
+      img: 'assets/girl2.png',
       name: 'Nisha Verma',
       review: 'I always get compliments after my visits here. Thank you!'
     },
     {
-      img: 'assets/service-bridal.jpg',
+      img: 'assets/girl1.png',
       name: 'Zara Sheikh',
       review: 'The bridal team is outstanding. My wedding look was flawless.'
     },

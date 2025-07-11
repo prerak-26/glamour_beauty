@@ -11,21 +11,19 @@ export async function getAll(table) {
 }
 
 // Add a new item to a table
-export async function addItem(table, data) {
+export async function addItem(table, formData) {
   const res = await fetch(`${API_BASE}/${table}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    body: formData // Send FormData directly for file uploads
   });
   return res.json();
 }
 
 // Update an item in a table by id
-export async function updateItem(table, id, data) {
+export async function updateItem(table, id, formData) {
   const res = await fetch(`${API_BASE}/${table}/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    body: formData // Send FormData directly for file uploads
   });
   return res.json();
 }
@@ -42,7 +40,7 @@ export async function deleteItem(table, id) {
 
 // Register new admin (first time setup)
 export async function registerAdmin(email, password) {
-  const res = await fetch(`${API_BASE}/admin/register`, {
+  const res = await fetch(`${API_BASE}/api/admin/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -52,7 +50,7 @@ export async function registerAdmin(email, password) {
 
 // Login admin
 export async function loginAdmin(email, password) {
-  const res = await fetch(`${API_BASE}/admin/login`, {
+  const res = await fetch(`${API_BASE}/api/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -94,6 +92,19 @@ export async function fetchReviews() {
 
 export async function fetchEnquiries() {
   const res = await fetch(`${API_BASE}/enquiries`);
+  return res.json();
+}
+
+// Upload file to Supabase storage
+export async function uploadFile(file, bucket = 'services') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('bucket', bucket);
+  
+  const res = await fetch(`${API_BASE}/upload`, {
+    method: 'POST',
+    body: formData
+  });
   return res.json();
 }
 

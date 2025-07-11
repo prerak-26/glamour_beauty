@@ -1,4 +1,4 @@
-import { images, services, testimonialData } from "./data.js";
+import { images, testimonialData } from "./data.js";
 import { initResponsiveNavbar } from './navbar.js';
 initResponsiveNavbar();
 
@@ -14,20 +14,46 @@ function createGridLayout(images) {
 // Create hero collage immediately
 document.querySelector('#collage').innerHTML = createGridLayout(images);
 
-function createServiceCards(services) {
+async function createServiceCards() {
+    // Always show all three categories
+    const categories = {
+        1: { name: 'Salon', image: 'assets/service-hair.jpg' },
+        2: { name: 'Beauty', image: 'assets/service-beauty.jpg' },
+        3: { name: 'Bridal', image: 'assets/service-bridal.jpg' }
+    };
+    let services = [];
+    try {
+        // Fetch services from API
+        const response = await fetch('http://localhost:5000/services');
+        services = await response.json();
+    } catch (error) {
+        console.error('Error fetching services:', error);
+    }
     let layoutHtml = '';
-    services.forEach(service => {
+    Object.entries(categories).forEach(([categoryId, category]) => {
         layoutHtml += `<div class="service-block">
           <div class="service-img-wrapper">
-            <img src="${service.image}" alt="${service.name}" class="service-img" />
-            <span class="service-name">${service.name}</span>
+            <img src="${category.image}" alt="${category.name}" class="service-img" />
+            <span class="service-name">${category.name}</span>
           </div>
         </div>`;
     });
-    return layoutHtml;
+    document.querySelector('.new-service-cards').innerHTML = layoutHtml;
+    // Make service cards clickable
+    const serviceBlocks = document.querySelectorAll('.service-block');
+    const categoryIds = [1, 2, 3]; // 1: Salon, 2: Beauty, 3: Bridal
+    serviceBlocks.forEach((block, idx) => {
+        if (categoryIds[idx]) {
+            block.style.cursor = 'pointer';
+            block.addEventListener('click', function() {
+                window.location.href = `service.html?category=${categoryIds[idx]}`;
+            });
+        }
+    });
 }
 
-document.querySelector('.new-service-cards').innerHTML = createServiceCards(services);
+// Initialize service cards
+createServiceCards();
 
 // --- Testimonial Modal Logic ---
 
@@ -127,18 +153,31 @@ document.addEventListener('DOMContentLoaded', function() {
             title: contactForm.querySelector('input[name="subject"]').value,
             message: contactForm.querySelector('textarea[name="message"]').value
         };
-        
-        // Send email using EmailJS
-        emailjs.send('service_t9yzygj', 'template_0rs3l8w', formData)
-        .then(function(response) {
+        // Prepare data for backend
+        const backendData = new URLSearchParams({
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+            date: new Date().toISOString().split('T')[0]
+        });
+        // Send both EmailJS and backend request in parallel
+        Promise.all([
+            emailjs.send('service_t9yzygj', 'template_0rs3l8w', formData),
+            fetch('http://localhost:5000/enquiries', {
+                method: 'POST',
+                body: backendData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }).then(res => res.json())
+        ])
+        .then(([emailResult, dbResult]) => {
             // Success
             submitButton.textContent = 'Message Sent!';
-            submitText.textContent = ' Your message has been sent successfully.';
+            submitText.textContent = ' Your message has been sent and stored successfully.';
             submitText.style.color = '#28a745';
-            
             // Reset form
             contactForm.reset();
-            
             // Reset button after 3 seconds
             setTimeout(() => {
                 submitButton.disabled = false;
@@ -152,26 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitText.textContent = 'Sorry, there was an error. Please try again.';
             submitText.style.color = '#dc3545';
             submitButton.disabled = false;
-            
-            console.error('EmailJS Error:', error);
+            console.error('Contact form error:', error);
         });
     });
-});
-  
-
-// --- Make Service Cards Clickable ---
-document.addEventListener('DOMContentLoaded', function() {
-  // Wait for service cards to be rendered
-  const serviceBlocks = document.querySelectorAll('.service-block');
-  // IDs must match those in service.js: 1, 2, 3
-  const categoryIds = [1, 2, 3]; // 1: Salon, 2: Beauty, 3: Bridal
-  serviceBlocks.forEach((block, idx) => {
-    if (categoryIds[idx]) {
-      block.style.cursor = 'pointer';
-      block.addEventListener('click', function() {
-        window.location.href = `service.html?category=${categoryIds[idx]}`;
-      });
-    }
-  });
 });
   

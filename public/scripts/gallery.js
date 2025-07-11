@@ -3,28 +3,60 @@
 import { initResponsiveNavbar } from './navbar.js';
 initResponsiveNavbar();
 
-const galleryImages = [
-  'assets/bg-1.jpg',
-  'assets/bg-2.jpg',
-  'assets/bg-3.jpg',
-  'assets/bg-4.jpg',
-  'assets/bg-5.jpg',
-  'assets/bg-6.jpg',
-  'assets/bg-7.jpg',
-  'assets/bg-8.jpg',
-  'assets/bg-9.jpg',
-  'assets/service-beauty.jpg',
-  'assets/service-bridal.jpg',
-  'assets/service-hair.jpg'
-];
-
-function renderGallery() {
+async function renderGallery() {
   const grid = document.getElementById('gallery-grid');
-  grid.innerHTML = galleryImages.map(src => `
-    <div class="gallery-img-wrapper">
-      <img src="${src}" alt="Gallery Image" class="gallery-img" />
-    </div>
-  `).join('');
+  try {
+    // Fetch gallery images from API
+    const response = await fetch('http://localhost:5000/gallery');
+    const galleryData = await response.json();
+
+    if (galleryData.length === 0) {
+      grid.innerHTML = '<p style="color:#fff;text-align:center;">No gallery images available.</p>';
+      return;
+    }
+
+    grid.innerHTML = galleryData.map(item => `
+      <div class="gallery-img-wrapper">
+        <img src="${item.image_url}" alt="${item.caption || 'Gallery Image'}" class="gallery-img" />
+      </div>
+    `).join('');
+
+    // Wait for all images to load before setting up animation
+    const images = Array.from(grid.querySelectorAll('img'));
+    await Promise.all(images.map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => img.onload = img.onerror = resolve);
+    }));
+
+  } catch (error) {
+    console.error('Error fetching gallery:', error);
+    // Fallback to static images if API fails
+    const fallbackImages = [
+      'assets/bg-1.jpg',
+      'assets/bg-2.jpg',
+      'assets/bg-3.jpg',
+      'assets/bg-4.jpg',
+      'assets/bg-5.jpg',
+      'assets/bg-6.jpg',
+      'assets/bg-7.jpg',
+      'assets/bg-8.jpg',
+      'assets/bg-9.jpg',
+      'assets/service-beauty.jpg',
+      'assets/service-bridal.jpg',
+      'assets/service-hair.jpg'
+    ];
+    grid.innerHTML = fallbackImages.map(src => `
+      <div class="gallery-img-wrapper">
+        <img src="${src}" alt="Gallery Image" class="gallery-img" />
+      </div>
+    `).join('');
+    // Wait for fallback images to load
+    const images = Array.from(grid.querySelectorAll('img'));
+    await Promise.all(images.map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => img.onload = img.onerror = resolve);
+    }));
+  }
 }
 
 function setupHorizontalScroll() {
@@ -43,10 +75,10 @@ function setupHorizontalScroll() {
     wrapperWidth = firstImgWrapper.offsetWidth;
     // Try to get gap from flex or margin-right
     const gridStyle = window.getComputedStyle(galleryGrid);
-    wrapperGap = parseInt(gridStyle.gap || wrapperStyle.marginRight || 0) || 0;
+    wrapperGap = parseInt(gridStyle.gap || wrapperStyle.marginRight || 24) || 24;
   }
   // Adjust scrollLength so last image is fully visible
-  const scrollLength = gridWidth - viewportWidth;
+  const scrollLength = gridWidth - viewportWidth + wrapperGap;
 
   // Set the section height to scrollLength + horizontalWrapper.offsetTop + horizontalWrapper.offsetHeight
   // This ensures the gallery ends right above the footer, even with large images
@@ -138,7 +170,7 @@ function handleResize() {
 
 window.addEventListener('resize', handleResize);
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderGallery();
+document.addEventListener('DOMContentLoaded', async () => {
+  await renderGallery();
   setupGalleryAnimation();
 }); 

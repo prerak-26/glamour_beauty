@@ -1,40 +1,51 @@
 // public/scripts/service.js
-import { serviceData } from "./data.js";
 import { initResponsiveNavbar } from './navbar.js';
 initResponsiveNavbar();
+
 // Get category ID from URL
 function getCategoryId() {
   const params = new URLSearchParams(window.location.search);
   return Number(params.get('category'));
 }
 
-function renderService() {
+async function renderService() {
   const categoryId = getCategoryId();
   const title = document.getElementById('svc-title');
   const detailsList = document.getElementById('svc-details-list');
 
-  const category = serviceData.find(cat => cat.id === categoryId);
+  try {
+    // Fetch services from API
+    const response = await fetch('http://localhost:5000/services');
+    const services = await response.json();
+    
+    // Filter services by category
+    const categoryServices = services.filter(service => service.category_id === categoryId);
 
-  if (!category) {
-    title.textContent = 'Service Not Found';
-    detailsList.innerHTML = '<p>Sorry, the requested service does not exist.</p>';
-    return;
+    if (categoryServices.length === 0) {
+      title.textContent = 'Service Not Found';
+      detailsList.innerHTML = '<p>Sorry, no services found for this category.</p>';
+      return;
+    }
+
+    title.textContent = `Services`;
+    detailsList.innerHTML = categoryServices.map((service, idx) => `
+      <div class="svc-details-wrapper">
+        <div class="svc-details-img-col">
+          <img src="${service.image_url || 'assets/service-bridal.jpg'}" alt="${service.name}" class="svc-details-img" />
+        </div>
+        <div class="svc-details-info-col">
+          <div class="svc-info-name">${service.name}</div>
+          <div class="svc-info-desc">${service.description || 'Professional service'}</div>
+          <div class="svc-info-price">₹${service.price}</div>
+          <button class="svc-info-btn">Enquire More</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    title.textContent = 'Service Error';
+    detailsList.innerHTML = '<p>Sorry, there was an error loading services.</p>';
   }
-
-  title.textContent = `Services`;
-  detailsList.innerHTML = category.services.map((service, idx) => `
-    <div class="svc-details-wrapper">
-      <div class="svc-details-img-col">
-        <img src="assets/service-bridal.jpg" alt="Service Category ${categoryId}" class="svc-details-img" />
-      </div>
-      <div class="svc-details-info-col">
-        <div class="svc-info-name">${service.name}</div>
-        <div class="svc-info-desc">${service.description}</div>
-        <div class="svc-info-price">$${service.price}</div>
-        <button class="svc-info-btn">Enquire More</button>
-      </div>
-    </div>
-  `).join('');
 }
 
 document.addEventListener('DOMContentLoaded', renderService); 

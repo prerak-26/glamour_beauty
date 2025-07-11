@@ -967,6 +967,7 @@ footer {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  gap: .5rem;
 }
 
 /* =========================
@@ -1030,6 +1031,8 @@ footer {
 @media (max-width: 576px){
   .testimonial-collage{
     grid-template-columns: repeat(3, 1fr);
+    width: 100vw;
+    gap: .5rem;
   }
 }
 @media (max-width: 380px){
